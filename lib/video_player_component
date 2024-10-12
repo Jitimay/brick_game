@@ -1,0 +1,59 @@
+
+class VideoPlayerComponent extends PositionComponent {
+  final VideoPlayerController videoPlayerController;
+
+  VideoPlayerComponent({
+    required this.videoPlayerController,
+    required Vector2 size,
+    required Vector2 position,
+  }) : super(size: size, position: position);
+
+  @override
+  Future<void> onLoad() async {
+    await videoPlayerController.initialize();
+    videoPlayerController.setLooping(true);
+    videoPlayerController.play();
+  }
+
+  @override
+  void render(Canvas canvas) {
+    if (videoPlayerController.value.isInitialized) {
+      final videoSize = videoPlayerController.value.size;
+      final renderSize = size.toSize();
+      final videoRatio = videoSize.width / videoSize.height;
+      final renderRatio = renderSize.width / renderSize.height;
+
+      late Rect rect;
+      if (renderRatio > videoRatio) {
+        final newWidth = renderSize.height * videoRatio;
+        rect = Rect.fromCenter(
+          center: renderSize.center(Offset.zero),
+          width: newWidth,
+          height: renderSize.height,
+        );
+      } else {
+        final newHeight = renderSize.width / videoRatio;
+        rect = Rect.fromCenter(
+          center: renderSize.center(Offset.zero),
+          width: renderSize.width,
+          height: newHeight,
+        );
+      }
+
+      final textureId = videoPlayerController.textureId;
+      if (textureId != null) {
+        canvas.drawAtlas(
+          textureId,
+          Rect.fromLTWH(0, 0, videoSize.width, videoSize.height),
+          rect,
+          Paint(),
+        );
+      }
+    }
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+  }
+}
